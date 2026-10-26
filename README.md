@@ -1,41 +1,126 @@
-﻿# Nepal Public Data Pipeline
+﻿
+# Nepal Public Data Engineering Pipeline
 
-A reproducible data engineering project that ingests, validates, transforms, and stores public data about Nepal using Python, Parquet, and PostgreSQL. The project demonstrates data quality validation, automated testing, execution logging, containerization, and continuous integration with GitHub Actions.
+A reproducible data engineering project that ingests, validates, transforms, and stores public datasets about Nepal. The pipeline uses Python and Pandas for data processing, Parquet for analytical storage, PostgreSQL for structured data storage, Docker for environment setup, and pytest for automated testing.
 
-## Overview
+The project demonstrates practical data engineering concepts, including data ingestion, schema validation, data quality checks, transformation, aggregation, database loading, logging, and pipeline orchestration.
 
-This project processes public observations about Nepal from a Parquet dataset published through DataNepal. It supports downloading the source dataset when required, validating data integrity, standardizing date fields, generating cleaned Parquet output, producing summary reports, and loading processed observations into PostgreSQL.
+## Project Objectives
 
-The pipeline is designed around reproducibility and data integrity. Automated tests cover pipeline behavior, ingestion, transformations, and database-loading safeguards.
+- Ingest public data related to Nepal from a published Parquet dataset.
+- Validate schemas, identifiers, values, and observation periods.
+- Transform raw observations into a cleaned analytical dataset.
+- Generate indicator-level and dataset-level summary reports.
+- Load processed observations into PostgreSQL.
+- Automate pipeline execution and verify functionality through tests.
+- Provide a reproducible development environment using Docker.
 
-## Features
+## Architecture
 
-- **Data ingestion:** Download and validate the source dataset when the raw input is missing.
-- **Data validation:** Check required columns, missing identifiers, duplicate observation IDs, date validity, and observation periods.
-- **Data cleaning:** Standardize date fields and write validated observations to Parquet.
-- **Data transformation:** Generate indicator-level and dataset-level summary reports.
-- **Data quality reporting:** Generate a structured data quality report.
-- **Execution logging:** Record pipeline progress and errors.
-- **PostgreSQL integration:** Load cleaned observations into a relational database.
-- **Duplicate-load protection:** Stop loading when the destination table already contains records.
-- **Containerization:** Run PostgreSQL and pipeline workflows using Docker Compose.
-- **Automated testing:** Use pytest to test pipeline functionality.
-- **Continuous integration:** Run automated tests through GitHub Actions.
+```text
+Public Nepal Dataset
+        |
+        v
+   Data Ingestion
+        |
+        v
+     Raw Parquet
+        |
+        v
+  Data Validation
+        |
+        v
+  Data Transformation
+        |
+        +----------------------+
+        |                      |
+        v                      v
+ Cleaned Parquet        Summary Reports
+        |               - Indicator summary
+        |               - Dataset summary
+        v
+   PostgreSQL
+        |
+        v
+  Analytical Queries
+```
 
-## Dataset Summary
+The pipeline is orchestrated through `src/pipeline.py`. PostgreSQL loading is available as a separate step so that data processing and database operations can be managed independently.
 
-The current development dataset contains the following snapshot:
+## Technology Stack
+
+| Technology | Purpose |
+|---|---|
+| Python | Pipeline orchestration and data processing |
+| Pandas | Data cleaning, validation support, and aggregation |
+| PyArrow | Parquet file processing |
+| PostgreSQL | Relational data storage |
+| Docker Compose | Local database and container orchestration |
+| pytest | Automated testing |
+| GitHub Actions | Continuous integration |
+| Git | Version control |
+
+## Repository Structure
+
+```text
+nepal-data-pipeline/
+├── data/
+│   ├── raw/
+│   └── processed/
+├── logs/
+├── src/
+│   ├── check_postgres_connection.py
+│   ├── data_quality_report.py
+│   ├── ingest_data.py
+│   ├── inspect_data.py
+│   ├── load_to_postgres.py
+│   ├── pipeline.py
+│   ├── profile_data.py
+│   ├── transform_data.py
+│   └── validate_data.py
+├── tests/
+├── .github/
+│   └── workflows/
+├── docker-compose.yml
+├── Dockerfile
+├── requirements.txt
+├── .gitignore
+└── README.md
+```
+
+Generated data files and local environment files are excluded from version control where configured in `.gitignore`.
+
+## Data Source
+
+The pipeline uses the published DataNepal observations dataset:
+
+- Source: https://datanepal.org/data/observations.parquet
+- Format: Apache Parquet
+- Content: Structured observations from multiple datasets related to Nepal
+
+The dataset contains observations from sources represented by identifiers such as:
+
+- `nso-nphc-2021`
+- `cod-ps-npl`
+- `worldbank-npl`
+- `ecn-hor-2026`
+
+The pipeline validates the downloaded dataset before accepting it as a raw input. Existing raw data is not overwritten unless the ingestion script is explicitly instructed to do so.
+
+## Dataset Snapshot
+
+The following figures are from the locally verified dataset used during development.
 
 | Metric | Result |
 |---|---:|
-| Observations | 27,182 |
+| Total observations | 27,182 |
 | Columns | 12 |
 | Unique indicators | 36 |
 | Unique places | 838 |
 | Duplicate observation IDs | 0 |
 | Duplicate rows | 0 |
 
-### Dataset distribution
+### Observations by dataset
 
 | Dataset ID | Observations |
 |---|---:|
@@ -45,182 +130,164 @@ The current development dataset contains the following snapshot:
 | `ecn-hor-2026` | 121 |
 | **Total** | **27,182** |
 
-These figures describe the development snapshot and may change when the upstream dataset is updated.
-
-The transformation workflow currently generates 37 rows in the indicator summary and 4 rows in the dataset summary. Summary row counts do not necessarily equal the number of unique indicator IDs.
-
-## Technology Stack
-
-- **Language:** Python
-- **Data processing:** pandas, PyArrow, Parquet
-- **Database:** PostgreSQL
-- **Containerization:** Docker, Docker Compose
-- **Testing:** pytest
-- **Version control:** Git and GitHub
-- **Continuous integration:** GitHub Actions
-
-## Project Structure
-
-```text
-nepal-data-pipeline/
-├── .github/
-│   └── workflows/
-│       └── tests.yml
-├── data/
-│   ├── raw/
-│   └── processed/
-├── logs/
-├── src/
-│   ├── ingest_data.py
-│   ├── pipeline.py
-│   ├── transform_data.py
-│   ├── validate_data.py
-│   ├── inspect_data.py
-│   ├── profile_data.py
-│   ├── data_quality_report.py
-│   ├── load_to_postgres.py
-│   └── check_postgres_connection.py
-├── tests/
-├── .dockerignore
-├── .gitignore
-├── Dockerfile
-├── compose.yaml
-├── requirements.txt
-└── README.md
-```
-
-Generated data files, logs, virtual environments, and environment configuration files are excluded from version control.
-
-## Prerequisites
-
-- Python 3.12 or a compatible Python version
-- Git
-- Docker Desktop with Docker Compose, for containerized workflows
-- Internet access when downloading the source dataset
-
-Python 3.12 is the version configured in the Docker image and GitHub Actions workflow.
+These are development-time results, not guaranteed permanent counts. The upstream dataset may change.
 
 ## Getting Started
 
+### Prerequisites
+
+Install the following tools:
+
+- Python 3.12 or another compatible Python version
+- Git
+- Docker Desktop, if you want to run PostgreSQL through Docker
+- PowerShell on Windows, or an equivalent terminal
+
 ### 1. Clone the repository
 
-```bash
+```powershell
 git clone https://github.com/manish11111111/nepal-data-pipeline.git
 cd nepal-data-pipeline
 ```
 
-### 2. Create and activate a virtual environment
+### 2. Create a virtual environment
 
-**Windows PowerShell**
+On Windows PowerShell:
 
 ```powershell
-python -m venv .venv
+py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
 ```
 
-### 3. Obtain the source dataset
+If Python 3.12 is unavailable, use an installed compatible Python version.
 
-The pipeline expects the raw dataset at:
-
-```text
-data/raw/observations.parquet
-```
-
-The configured source URL is:
-
-https://datanepal.org/data/observations.parquet
-
-To download and validate the dataset directly:
+### 3. Install dependencies
 
 ```powershell
-python .\src\ingest_data.py
+python -m pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
-The ingestion script validates the downloaded Parquet file before replacing the destination. If the destination already exists, it leaves that file unchanged unless `--force` is explicitly supplied.
+## Running the Pipeline
 
-Alternatively, run the pipeline with `--ingest` to download the dataset if the expected raw file is missing.
-
-Raw and processed data files are excluded from version control, so a fresh clone may not include the dataset.
-
-**Data attribution and licensing:** DataNepal aggregates information from multiple providers. Consult the DataNepal catalogue and original publishers for source metadata, licensing terms, attribution requirements, retrieval dates, and methodological caveats. Do not assume all sources use the same licence.
-
-## Run the Pipeline
-
-### Run with an existing raw dataset
+### Run the default pipeline
 
 ```powershell
 python .\src\pipeline.py
 ```
 
-### Download the dataset if it is missing
+The pipeline uses the project's default raw and processed data paths. If the default raw dataset is missing, use the ingestion option to download it automatically.
 
 ```powershell
 python .\src\pipeline.py --ingest
 ```
 
-The `--ingest` option enables downloading only when the expected raw dataset is missing. It does not force a fresh download on every run.
+### Run with a custom input and output path
 
-### Skip summary generation
+The pipeline accepts optional input and output paths. This allows you to validate and process a separate dataset without overwriting the default cleaned dataset.
 
 ```powershell
-python .\src\pipeline.py --no-summaries
+python .\src\pipeline.py `
+  --input .\data\raw\observations_e2e_test.parquet `
+  --output .\data\processed\e2e_test\observations_clean.parquet
 ```
 
-The pipeline validates the input, standardizes date fields, writes the cleaned Parquet output, and generates summary reports by default.
+When summary generation is enabled, the indicator and dataset summary CSV files are written to the same directory as the specified output Parquet file.
+
+To skip summary generation:
+
+```powershell
+python .\src\pipeline.py `
+  --input .\data\raw\observations_e2e_test.parquet `
+  --output .\data\processed\e2e_test\observations_clean.parquet `
+  --no-summaries
+```
+
+If `--input` or `--output` is omitted, the pipeline uses the corresponding default project path. The `--ingest` option downloads data when the selected input path does not exist.
+
+### Pipeline stages
+
+The orchestrated workflow performs the following operations:
+
+1. Reads the selected raw Parquet dataset.
+2. Validates the required schema and observation records.
+3. Checks identifiers, missing values, and observation periods.
+4. Converts date fields into appropriate datetime types.
+5. Writes the cleaned Parquet dataset.
+6. Generates indicator-level and dataset-level summary reports, unless disabled.
+7. Logs pipeline progress and completion.
+
+## Data Validation
+
+The validation logic checks important data integrity conditions, including:
+
+- Required columns are present.
+- Observation and dataset identifiers are populated.
+- Required status and period fields are available.
+- Observation IDs are unique.
+- Each record contains a numeric or textual value.
+- Observation dates can be parsed.
+- Observation end dates are not earlier than their start dates.
+
+The ingestion stage also checks the downloaded dataset before replacing the target raw file.
+
+These checks help detect malformed or inconsistent data before it proceeds through the pipeline.
+
+## Data Transformation
+
+The transformation module generates aggregated CSV reports from the cleaned observations.
+
+### Indicator summary
+
+The indicator summary groups observations by dataset, indicator, and unit. It provides a compact view of the available indicators and their associated data.
+
+### Dataset summary
+
+The dataset summary groups observations by dataset, status, and period type. It provides a high-level view of the records available from each source.
 
 ### Generated outputs
 
-The principal output files are:
-
 ```text
-data/processed/observations_clean.parquet
-data/processed/indicator_summary.csv
-data/processed/dataset_summary.csv
-data/processed/data_quality_report.json
-logs/pipeline.log
+data/processed/
+├── observations_clean.parquet
+├── indicator_summary.csv
+├── dataset_summary.csv
+├── data_quality_report.json
+└── dataset_summary.csv
 ```
 
-The cleaned Parquet file, summary CSVs, and pipeline log are produced by the main pipeline workflow. The data quality report is generated by its dedicated reporting script rather than necessarily by every pipeline run.
+The files shown represent the types of processed artifacts generated or maintained by the project. Exact outputs depend on which scripts have been executed and the selected output directory.
 
-## PostgreSQL Integration
+## Data Quality and Profiling
 
-The project includes a loader that writes cleaned observations to PostgreSQL.
-
-The loader reads the following environment variables:
-
-| Variable | Purpose |
-|---|---|
-| `DB_HOST` | Database host |
-| `DB_PORT` | Database port |
-| `DB_NAME` | Database name |
-| `DB_USER` | Database username |
-| `DB_PASSWORD` | Database password |
-
-When variables are not provided, the loader uses its configured defaults and may prompt for the password.
-
-Run the loader after generating the cleaned Parquet file:
+The repository includes scripts for inspecting, profiling, validating, and reporting on the data:
 
 ```powershell
-python .\src\load_to_postgres.py
+python .\src\inspect_data.py
+python .\src\profile_data.py
+python .\src\validate_data.py
+python .\src\data_quality_report.py
 ```
 
-The loader creates the `observations` table if necessary and checks whether it already contains records. If the table is populated, the loader stops instead of inserting the entire dataset again.
+These scripts support inspection of the source data, validation of data assumptions, and production of data quality information.
 
-**Important:** The development database already contains 27,182 observations. Do not rerun the loader against that populated table, or delete the database volume just to repeat the initial load.
+Run each script from the repository root. Its precise inputs and outputs depend on the paths configured in the script.
 
-## Run with Docker Compose
+## PostgreSQL Setup with Docker
 
-### 1. Configure the database password
+PostgreSQL can be started locally using Docker Compose.
 
-Create a `.env` file in the project root:
+### 1. Configure environment variables
+
+Create a local `.env` file containing the database credentials expected by your Compose configuration. For example:
 
 ```dotenv
-POSTGRES_PASSWORD=replace_with_your_own_strong_password
+POSTGRES_DB=nepal_data
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=replace_with_a_local_password
 ```
 
-Replace the placeholder with your own strong password. Never commit or share the `.env` file.
+Use the variable names expected by your actual `docker-compose.yml` and application configuration. Keep real credentials private and never commit `.env` to Git.
 
 ### 2. Start PostgreSQL
 
@@ -228,87 +295,564 @@ Replace the placeholder with your own strong password. Never commit or share the
 docker compose up -d db
 ```
 
-The current configuration exposes PostgreSQL on host port `5433`, mapped to container port `5432`.
+The local PostgreSQL service is configured to use host port `5433`, mapped to container port `5432`.
 
-### 3. Run the pipeline container
+### 3. Check the connection
 
-The pipeline service uses the `pipeline` Compose profile:
+```powershell
+python .\src\check_postgres_connection.py
+```
+
+Ensure your local environment variables and database connection settings match the Compose configuration.
+
+### 4. Load the processed data
+
+```powershell
+python .\src\load_to_postgres.py
+```
+
+**Important:** The loader checks whether the destination `observations` table already contains records and refuses to load if it is populated. This prevents accidental duplicate loading. Inspect the database and the loader's behavior before attempting another load.
+
+Do not remove the PostgreSQL Docker volume to resolve a loading issue; doing so can delete stored database data.
+
+### 5. Run the containerized pipeline
+
+The pipeline service is configured behind the `pipeline` Compose profile:
 
 ```powershell
 docker compose --profile pipeline run --rm pipeline
 ```
 
-The container runs `python src/pipeline.py`. Ensure the raw dataset exists in `data/raw/observations.parquet` before running this command, unless you explicitly override the command to enable ingestion.
+This command runs the pipeline service using the default paths available inside its container. Ensure the required raw data is available through the configured volumes or that ingestion is configured appropriately for your environment.
 
-### 4. Load the data into PostgreSQL
+## Automated Testing
 
-For a fresh database with an empty `observations` table, run:
+The project uses `pytest` to verify data validation and pipeline behavior.
 
-```powershell
-docker compose --profile pipeline run --rm --no-deps --entrypoint python pipeline src/load_to_postgres.py
-```
-
-Run the initial load only once. The loader intentionally stops if records already exist.
-
-### 5. Verify the database
-
-Check the total number of observations:
-
-```powershell
-docker compose exec db psql -U pipeline_user -d nepal_data -c "SELECT COUNT(*) AS total_rows FROM observations;"
-```
-
-Inspect the distribution by dataset:
-
-```powershell
-docker compose exec db psql -U pipeline_user -d nepal_data -c "SELECT dataset_id, COUNT(*) AS row_count FROM observations GROUP BY dataset_id ORDER BY row_count DESC;"
-```
-
-### 6. Stop the containers
-
-```powershell
-docker compose down
-```
-
-This stops and removes the containers while preserving the named database volume. Avoid `docker compose down -v` unless you intentionally want to delete the persisted database volume.
-
-## Testing
-
-Run the automated test suite:
+Run the test suite:
 
 ```powershell
 python -m pytest -v
 ```
 
-**Latest verified local result: 19 tests passed.**
+Compile the main pipeline modules:
 
-The test suite covers pipeline validation, missing input handling, ingestion behavior, optional summary generation, transformation outputs, and database-loading safeguards.
+```powershell
+python -m py_compile .\src\pipeline.py
+python -m py_compile .\src\ingest_data.py
+python -m py_compile .\src\transform_data.py
+```
 
-This result reflects the recorded local test run; it does not imply that every possible input or deployment configuration has been tested.
+The tests cover validation behavior and pipeline scenarios, including missing raw files, ingestion behavior, and skipping summary generation.
+
+### Verified local results
+
+The following results were observed during local development:
+
+- **19 automated tests passed** before the latest custom-path changes were fully documented.
+- End-to-end pipeline execution completed successfully using a separate test input and output directory.
+- Cleaned dataset contained 27,182 rows and 12 columns.
+- Indicator summary contained 37 rows.
+- Dataset summary contained 4 rows.
+- All 27,182 observation IDs were unique.
+- Duplicate observation IDs: 0.
+
+Test counts can change as new regression tests are added. Run the test suite to obtain the current result for your checkout.
+
+## Logging
+
+Pipeline progress and errors are recorded in the project log directory.
+
+```text
+logs/
+└── pipeline.log
+```
+
+Logs help trace ingestion, validation, transformation, output creation, and pipeline completion.
 
 ## Continuous Integration
 
-GitHub Actions runs the automated test suite on pushes and pull requests targeting the `main` branch.
+GitHub Actions is configured to run automated tests using Python 3.12.
 
-The workflow is defined in `.github/workflows/tests.yml` and uses Python 3.12 to install the project dependencies and run:
+The CI workflow helps catch regressions and verify that the test suite runs in a clean environment. Check the repository's Actions tab for the latest workflow status:
 
-```bash
-python -m pytest -v
-```
+https://github.com/manish11111111/nepal-data-pipeline/actions
+
+## Design Considerations
+
+Several implementation choices are intended to improve reliability:
+
+- **Validation before processing:** Invalid records are detected before downstream transformations.
+- **Safe ingestion:** Downloaded data is validated before replacing the target raw file.
+- **Separate stages:** Ingestion, validation, transformation, and database loading have distinct responsibilities.
+- **Reproducible environment:** Dependencies and container configuration are version-controlled.
+- **Automated tests:** Core behavior is checked through repeatable test cases.
+- **Database safeguards:** The loader avoids silently loading into an already populated observations table.
+- **Configurable paths:** The orchestrator supports custom input and output paths for isolated processing and testing.
 
 ## Future Improvements
 
-- Add configurable data quality thresholds.
-- Record source metadata, retrieval timestamps, and data provenance.
-- Introduce scheduled ingestion and refresh workflows.
-- Implement incremental loading and explicit database schema migrations.
-- Add integration tests using an isolated PostgreSQL instance.
-- Build a dashboard for exploring dataset quality and summary statistics.
-- Document source licensing, update frequency, and known data limitations.
-- Add pipeline metrics and monitoring for production-style observability.
+Potential next steps include:
 
-## Data Quality and Licensing Notes
+- Add stronger schema contracts and explicit data type checks.
+- Add configurable retry and timeout policies for ingestion.
+- Track source dataset versions and ingestion timestamps.
+- Improve incremental ingestion and change detection.
+- Add more database integration tests.
+- Add data freshness and quality metrics.
+- Expand CI to test the Dockerized workflow.
+- Add reproducible sample data and a documented end-to-end demonstration.
+- Explore orchestration tools and scheduling for larger workflows.
+- Add a dashboard for exploring indicators and datasets.
 
-Validation checks establish whether a dataset meets defined technical rules. They do not independently establish the accuracy, completeness, or interpretation of every observation.
+## Limitations
 
-Before redistributing source data, review the relevant original providers' licensing conditions and attribution requirements.
+- The pipeline depends on the availability and structure of the upstream dataset.
+- Summary counts may change when the source data changes.
+- The current database loader is intentionally cautious about loading into a populated table.
+- Local execution, Docker execution, and CI execution can differ depending on configuration and environment.
+- The project is a portfolio and learning project, not an official Nepal government data service.
+
+## License and Data Attribution
+
+This repository uses a public dataset published by DataNepal. Review the upstream dataset's license and terms before redistributing the data.
+
+Unless a license file is present in this repository, do not assume that the project code or source data has a particular open-source license. Add an explicit `LICENSE` file if you intend to publish the code under a specific license.
+
+## Author
+
+**Manish Chapagain**
+
+Computer Engineering graduate interested in data engineering, artificial intelligence, and data-driven applications.
+
+- GitHub: https://github.com/manish11111111
+- Project repository: https://github.com/manish11111111/nepal-data-pipeline
+
+# Nepal Public Data Engineering Pipeline
+
+A reproducible data engineering project that ingests, validates, transforms, and stores public datasets about Nepal. The pipeline uses Python and Pandas for data processing, Parquet for analytical storage, PostgreSQL for structured data storage, Docker for environment setup, and pytest for automated testing.
+
+The project demonstrates practical data engineering concepts, including data ingestion, schema validation, data quality checks, transformation, aggregation, database loading, logging, and pipeline orchestration.
+
+## Project Objectives
+
+- Ingest public data related to Nepal from a published Parquet dataset.
+- Validate schemas, identifiers, values, and observation periods.
+- Transform raw observations into a cleaned analytical dataset.
+- Generate indicator-level and dataset-level summary reports.
+- Load processed observations into PostgreSQL.
+- Automate pipeline execution and verify functionality through tests.
+- Provide a reproducible development environment using Docker.
+
+## Architecture
+
+```text
+Public Nepal Dataset
+        |
+        v
+   Data Ingestion
+        |
+        v
+     Raw Parquet
+        |
+        v
+  Data Validation
+        |
+        v
+  Data Transformation
+        |
+        +----------------------+
+        |                      |
+        v                      v
+ Cleaned Parquet        Summary Reports
+        |               - Indicator summary
+        |               - Dataset summary
+        v
+   PostgreSQL
+        |
+        v
+  Analytical Queries
+```
+
+The pipeline is orchestrated through `src/pipeline.py`. PostgreSQL loading is available as a separate step so that data processing and database operations can be managed independently.
+
+## Technology Stack
+
+| Technology | Purpose |
+|---|---|
+| Python | Pipeline orchestration and data processing |
+| Pandas | Data cleaning, validation support, and aggregation |
+| PyArrow | Parquet file processing |
+| PostgreSQL | Relational data storage |
+| Docker Compose | Local database and container orchestration |
+| pytest | Automated testing |
+| GitHub Actions | Continuous integration |
+| Git | Version control |
+
+## Repository Structure
+
+```text
+nepal-data-pipeline/
+├── data/
+│   ├── raw/
+│   └── processed/
+├── logs/
+├── src/
+│   ├── check_postgres_connection.py
+│   ├── data_quality_report.py
+│   ├── ingest_data.py
+│   ├── inspect_data.py
+│   ├── load_to_postgres.py
+│   ├── pipeline.py
+│   ├── profile_data.py
+│   ├── transform_data.py
+│   └── validate_data.py
+├── tests/
+├── .github/
+│   └── workflows/
+├── docker-compose.yml
+├── Dockerfile
+├── requirements.txt
+├── .gitignore
+└── README.md
+```
+
+Generated data files and local environment files are excluded from version control where configured in `.gitignore`.
+
+## Data Source
+
+The pipeline uses the published DataNepal observations dataset:
+
+- Source: https://datanepal.org/data/observations.parquet
+- Format: Apache Parquet
+- Content: Structured observations from multiple datasets related to Nepal
+
+The dataset contains observations from sources represented by identifiers such as:
+
+- `nso-nphc-2021`
+- `cod-ps-npl`
+- `worldbank-npl`
+- `ecn-hor-2026`
+
+The pipeline validates the downloaded dataset before accepting it as a raw input. Existing raw data is not overwritten unless the ingestion script is explicitly instructed to do so.
+
+## Dataset Snapshot
+
+The following figures are from the locally verified dataset used during development.
+
+| Metric | Result |
+|---|---:|
+| Total observations | 27,182 |
+| Columns | 12 |
+| Unique indicators | 36 |
+| Unique places | 838 |
+| Duplicate observation IDs | 0 |
+| Duplicate rows | 0 |
+
+### Observations by dataset
+
+| Dataset ID | Observations |
+|---|---:|
+| `nso-nphc-2021` | 21,258 |
+| `cod-ps-npl` | 4,590 |
+| `worldbank-npl` | 1,213 |
+| `ecn-hor-2026` | 121 |
+| **Total** | **27,182** |
+
+These are development-time results, not guaranteed permanent counts. The upstream dataset may change.
+
+## Getting Started
+
+### Prerequisites
+
+Install the following tools:
+
+- Python 3.12 or another compatible Python version
+- Git
+- Docker Desktop, if you want to run PostgreSQL through Docker
+- PowerShell on Windows, or an equivalent terminal
+
+### 1. Clone the repository
+
+```powershell
+git clone https://github.com/manish11111111/nepal-data-pipeline.git
+cd nepal-data-pipeline
+```
+
+### 2. Create a virtual environment
+
+On Windows PowerShell:
+
+```powershell
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+If Python 3.12 is unavailable, use an installed compatible Python version.
+
+### 3. Install dependencies
+
+```powershell
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+## Running the Pipeline
+
+### Run the default pipeline
+
+```powershell
+python .\src\pipeline.py
+```
+
+The pipeline uses the project's default raw and processed data paths. If the default raw dataset is missing, use the ingestion option to download it automatically.
+
+```powershell
+python .\src\pipeline.py --ingest
+```
+
+### Run with a custom input and output path
+
+The pipeline accepts optional input and output paths. This allows you to validate and process a separate dataset without overwriting the default cleaned dataset.
+
+```powershell
+python .\src\pipeline.py `
+  --input .\data\raw\observations_e2e_test.parquet `
+  --output .\data\processed\e2e_test\observations_clean.parquet
+```
+
+When summary generation is enabled, the indicator and dataset summary CSV files are written to the same directory as the specified output Parquet file.
+
+To skip summary generation:
+
+```powershell
+python .\src\pipeline.py `
+  --input .\data\raw\observations_e2e_test.parquet `
+  --output .\data\processed\e2e_test\observations_clean.parquet `
+  --no-summaries
+```
+
+If `--input` or `--output` is omitted, the pipeline uses the corresponding default project path. The `--ingest` option downloads data when the selected input path does not exist.
+
+### Pipeline stages
+
+The orchestrated workflow performs the following operations:
+
+1. Reads the selected raw Parquet dataset.
+2. Validates the required schema and observation records.
+3. Checks identifiers, missing values, and observation periods.
+4. Converts date fields into appropriate datetime types.
+5. Writes the cleaned Parquet dataset.
+6. Generates indicator-level and dataset-level summary reports, unless disabled.
+7. Logs pipeline progress and completion.
+
+## Data Validation
+
+The validation logic checks important data integrity conditions, including:
+
+- Required columns are present.
+- Observation and dataset identifiers are populated.
+- Required status and period fields are available.
+- Observation IDs are unique.
+- Each record contains a numeric or textual value.
+- Observation dates can be parsed.
+- Observation end dates are not earlier than their start dates.
+
+The ingestion stage also checks the downloaded dataset before replacing the target raw file.
+
+These checks help detect malformed or inconsistent data before it proceeds through the pipeline.
+
+## Data Transformation
+
+The transformation module generates aggregated CSV reports from the cleaned observations.
+
+### Indicator summary
+
+The indicator summary groups observations by dataset, indicator, and unit. It provides a compact view of the available indicators and their associated data.
+
+### Dataset summary
+
+The dataset summary groups observations by dataset, status, and period type. It provides a high-level view of the records available from each source.
+
+### Generated outputs
+
+```text
+data/processed/
+├── observations_clean.parquet
+├── indicator_summary.csv
+├── dataset_summary.csv
+├── data_quality_report.json
+└── dataset_summary.csv
+```
+
+The files shown represent the types of processed artifacts generated or maintained by the project. Exact outputs depend on which scripts have been executed and the selected output directory.
+
+## Data Quality and Profiling
+
+The repository includes scripts for inspecting, profiling, validating, and reporting on the data:
+
+```powershell
+python .\src\inspect_data.py
+python .\src\profile_data.py
+python .\src\validate_data.py
+python .\src\data_quality_report.py
+```
+
+These scripts support inspection of the source data, validation of data assumptions, and production of data quality information.
+
+Run each script from the repository root. Its precise inputs and outputs depend on the paths configured in the script.
+
+## PostgreSQL Setup with Docker
+
+PostgreSQL can be started locally using Docker Compose.
+
+### 1. Configure environment variables
+
+Create a local `.env` file containing the database credentials expected by your Compose configuration. For example:
+
+```dotenv
+POSTGRES_DB=nepal_data
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=replace_with_a_local_password
+```
+
+Use the variable names expected by your actual `docker-compose.yml` and application configuration. Keep real credentials private and never commit `.env` to Git.
+
+### 2. Start PostgreSQL
+
+```powershell
+docker compose up -d db
+```
+
+The local PostgreSQL service is configured to use host port `5433`, mapped to container port `5432`.
+
+### 3. Check the connection
+
+```powershell
+python .\src\check_postgres_connection.py
+```
+
+Ensure your local environment variables and database connection settings match the Compose configuration.
+
+### 4. Load the processed data
+
+```powershell
+python .\src\load_to_postgres.py
+```
+
+**Important:** The loader checks whether the destination `observations` table already contains records and refuses to load if it is populated. This prevents accidental duplicate loading. Inspect the database and the loader's behavior before attempting another load.
+
+Do not remove the PostgreSQL Docker volume to resolve a loading issue; doing so can delete stored database data.
+
+### 5. Run the containerized pipeline
+
+The pipeline service is configured behind the `pipeline` Compose profile:
+
+```powershell
+docker compose --profile pipeline run --rm pipeline
+```
+
+This command runs the pipeline service using the default paths available inside its container. Ensure the required raw data is available through the configured volumes or that ingestion is configured appropriately for your environment.
+
+## Automated Testing
+
+The project uses `pytest` to verify data validation and pipeline behavior.
+
+Run the test suite:
+
+```powershell
+python -m pytest -v
+```
+
+Compile the main pipeline modules:
+
+```powershell
+python -m py_compile .\src\pipeline.py
+python -m py_compile .\src\ingest_data.py
+python -m py_compile .\src\transform_data.py
+```
+
+The tests cover validation behavior and pipeline scenarios, including missing raw files, ingestion behavior, and skipping summary generation.
+
+### Verified local results
+
+The following results were observed during local development:
+
+- **19 automated tests passed** before the latest custom-path changes were fully documented.
+- End-to-end pipeline execution completed successfully using a separate test input and output directory.
+- Cleaned dataset contained 27,182 rows and 12 columns.
+- Indicator summary contained 37 rows.
+- Dataset summary contained 4 rows.
+- All 27,182 observation IDs were unique.
+- Duplicate observation IDs: 0.
+
+Test counts can change as new regression tests are added. Run the test suite to obtain the current result for your checkout.
+
+## Logging
+
+Pipeline progress and errors are recorded in the project log directory.
+
+```text
+logs/
+└── pipeline.log
+```
+
+Logs help trace ingestion, validation, transformation, output creation, and pipeline completion.
+
+## Continuous Integration
+
+GitHub Actions is configured to run automated tests using Python 3.12.
+
+The CI workflow helps catch regressions and verify that the test suite runs in a clean environment. Check the repository's Actions tab for the latest workflow status:
+
+https://github.com/manish11111111/nepal-data-pipeline/actions
+
+## Design Considerations
+
+Several implementation choices are intended to improve reliability:
+
+- **Validation before processing:** Invalid records are detected before downstream transformations.
+- **Safe ingestion:** Downloaded data is validated before replacing the target raw file.
+- **Separate stages:** Ingestion, validation, transformation, and database loading have distinct responsibilities.
+- **Reproducible environment:** Dependencies and container configuration are version-controlled.
+- **Automated tests:** Core behavior is checked through repeatable test cases.
+- **Database safeguards:** The loader avoids silently loading into an already populated observations table.
+- **Configurable paths:** The orchestrator supports custom input and output paths for isolated processing and testing.
+
+## Future Improvements
+
+Potential next steps include:
+
+- Add stronger schema contracts and explicit data type checks.
+- Add configurable retry and timeout policies for ingestion.
+- Track source dataset versions and ingestion timestamps.
+- Improve incremental ingestion and change detection.
+- Add more database integration tests.
+- Add data freshness and quality metrics.
+- Expand CI to test the Dockerized workflow.
+- Add reproducible sample data and a documented end-to-end demonstration.
+- Explore orchestration tools and scheduling for larger workflows.
+- Add a dashboard for exploring indicators and datasets.
+
+## Limitations
+
+- The pipeline depends on the availability and structure of the upstream dataset.
+- Summary counts may change when the source data changes.
+- The current database loader is intentionally cautious about loading into a populated table.
+- Local execution, Docker execution, and CI execution can differ depending on configuration and environment.
+- The project is a portfolio and learning project, not an official Nepal government data service.
+
+## License and Data Attribution
+
+This repository uses a public dataset published by DataNepal. Review the upstream dataset's license and terms before redistributing the data.
+
+Unless a license file is present in this repository, do not assume that the project code or source data has a particular open-source license. Add an explicit `LICENSE` file if you intend to publish the code under a specific license.
+
+## Author
+
+**Manish Chapagain**
+
+Computer Engineering graduate interested in data engineering, artificial intelligence, and data-driven applications.
+
+- GitHub: https://github.com/manish11111111
+- Project repository: https://github.com/manish11111111/nepal-data-pipeline

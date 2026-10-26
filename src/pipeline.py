@@ -1,4 +1,3 @@
-
 import argparse
 import logging
 import sys
@@ -122,16 +121,20 @@ def validate_data(df: pd.DataFrame) -> None:
 def run_pipeline(
     download_if_missing=False,
     build_summaries=True,
+    input_path=None,
+    output_path=None,
 ):
-    logger = configure_logging()
+    raw_path = Path(input_path) if input_path else RAW_PATH
+    cleaned_path = Path(output_path) if output_path else OUTPUT_PATH
 
+    logger = configure_logging()
     logger.info("Starting Nepal public data pipeline")
 
     try:
-        if not RAW_PATH.exists():
+        if not raw_path.exists():
             if not download_if_missing:
                 raise FileNotFoundError(
-                    f"Raw dataset not found: {RAW_PATH}. "
+                    f"Raw dataset not found: {raw_path}. "
                     "Run with --ingest to download it."
                 )
 
@@ -142,22 +145,19 @@ def run_pipeline(
             except ImportError:
                 from ingest_data import download_dataset
 
-            download_dataset(RAW_PATH)
+            download_dataset(raw_path)
 
-            if not RAW_PATH.exists():
+            if not raw_path.exists():
                 raise FileNotFoundError(
                     "Ingestion completed without creating the raw dataset: "
-                    f"{RAW_PATH}"
+                    f"{raw_path}"
                 )
 
         logger.info("Reading raw dataset")
-
-        df = pd.read_parquet(RAW_PATH)
-
+        df = pd.read_parquet(raw_path)
         logger.info("Loaded %s rows", f"{len(df):,}")
 
         validate_data(df)
-
         logger.info("Data validation passed")
 
         df["period_start"] = pd.to_datetime(
@@ -165,21 +165,19 @@ def run_pipeline(
             errors="raise",
             format="mixed",
         )
-
         df["period_end"] = pd.to_datetime(
             df["period_end"],
             errors="raise",
             format="mixed",
         )
 
-        OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-
-        df.to_parquet(OUTPUT_PATH, index=False)
+        cleaned_path.parent.mkdir(parents=True, exist_ok=True)
+        df.to_parquet(cleaned_path, index=False)
 
         try:
-            display_path = OUTPUT_PATH.relative_to(PROJECT_ROOT)
+            display_path = cleaned_path.relative_to(PROJECT_ROOT)
         except ValueError:
-            display_path = OUTPUT_PATH
+            display_path = cleaned_path
 
         logger.info("Output saved to %s", display_path)
         logger.info("Rows written: %s", f"{len(df):,}")
@@ -193,8 +191,7 @@ def run_pipeline(
             except ImportError:
                 from transform_data import transform_data
 
-            transform_data(OUTPUT_PATH, OUTPUT_PATH.parent)
-
+            transform_data(cleaned_path, cleaned_path.parent)
             logger.info("Summary reports generated")
 
         logger.info("Pipeline completed successfully")
@@ -214,20 +211,32 @@ def main():
         action="store_true",
         help="Download the raw dataset only if it is missing.",
     )
-
     parser.add_argument(
         "--no-summaries",
         action="store_true",
         help="Skip summary CSV generation.",
     )
+    parser.add_argument(
+        "--input",
+        type=Path,
+        default=None,
+        help="Optional raw Parquet input path.",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        help="Optional cleaned Parquet output path.",
+    )
 
     args = parser.parse_args()
-
     sys.path.insert(0, str(Path(__file__).resolve().parent))
 
     run_pipeline(
         download_if_missing=args.ingest,
         build_summaries=not args.no_summaries,
+        input_path=args.input,
+        output_path=args.output,
     )
 
 
