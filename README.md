@@ -61,11 +61,11 @@ These figures describe the dataset currently processed by the project. Refer to 
 ```text
 nepal-data-pipeline/
 ├── .github/
-│   └── workflows/          # Automated CI workflows
+│   └── workflows/          
 ├── data/
-│   ├── raw/                 # Original input data (not committed)
-│   └── processed/           # Generated outputs (not committed)
-├── logs/                    # Pipeline logs
+│   ├── raw/              
+│   └── processed/           
+├── logs/                    
 ├── src/
 │   ├── pipeline.py
 │   ├── transform_data.py
@@ -85,7 +85,7 @@ nepal-data-pipeline/
 ├── compose.yaml
 ├── requirements.txt
 ├── README.md
-└── .env                   # Local credentials; never commit
+└── .env                  
 ```
 
 ## Prerequisites
