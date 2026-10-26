@@ -18,7 +18,10 @@ GLOBAL_CSS = """
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
     html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-
+/* Hide the green success checkmark in the page header */
+[data-testid="stStatusWidget"] {
+    display: none !important;
+}
     .stApp {
         background:
             radial-gradient(circle at 15% 0%, rgba(99,102,241,0.10), transparent 45%),
