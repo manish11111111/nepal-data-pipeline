@@ -9,14 +9,17 @@ INPUT_PATH = PROJECT_ROOT / "data" / "processed" / "observations_clean.parquet"
 OUTPUT_DIR = PROJECT_ROOT / "data" / "processed"
 
 
-def transform_data():
-    if not INPUT_PATH.exists():
+def transform_data(input_path=INPUT_PATH, output_dir=OUTPUT_DIR):
+    input_path = Path(input_path)
+    output_dir = Path(output_dir)
+
+    if not input_path.exists():
         raise FileNotFoundError(
-            f"Cleaned dataset not found: {INPUT_PATH}. "
+            f"Cleaned dataset not found: {input_path}. "
             "Run src/pipeline.py first."
         )
 
-    df = pd.read_parquet(INPUT_PATH)
+    df = pd.read_parquet(input_path)
 
     df["value_numeric"] = pd.to_numeric(
         df["value_numeric"], errors="raise"
@@ -64,10 +67,10 @@ def transform_data():
         )
     )
 
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-    indicator_path = OUTPUT_DIR / "indicator_summary.csv"
-    dataset_path = OUTPUT_DIR / "dataset_summary.csv"
+    indicator_path = output_dir / "indicator_summary.csv"
+    dataset_path = output_dir / "dataset_summary.csv"
 
     indicator_summary.to_csv(indicator_path, index=False)
     dataset_summary.to_csv(dataset_path, index=False)
@@ -76,8 +79,8 @@ def transform_data():
     print(f"Input observations: {len(df):,}")
     print(f"Indicator summary rows: {len(indicator_summary):,}")
     print(f"Dataset summary rows: {len(dataset_summary):,}")
-    print(f"Saved: {indicator_path.relative_to(PROJECT_ROOT)}")
-    print(f"Saved: {dataset_path.relative_to(PROJECT_ROOT)}")
+    print(f"Saved: {indicator_path}")
+    print(f"Saved: {dataset_path}")
 
 
 if __name__ == "__main__":
