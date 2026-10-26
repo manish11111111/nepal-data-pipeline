@@ -2,9 +2,9 @@
 
 A reproducible data engineering project that ingests, validates, transforms and stores public observations about Nepal. It uses Python, pandas and PyArrow for processing, Parquet for analytical storage, PostgreSQL for relational storage, Docker Compose for the local database, and pytest with GitHub Actions for automated testing.
 
-![Nepal Data Pipeline — System Architecture](docs/images/nepal-data-pipeline-architecture.png)
+![Nepal Data Pipeline — System Architecture](docs/images/nepal-data-pipeline-architecture1.png)
 
-*Editable vector version: [`docs/images/nepal-data-pipeline-architecture.svg`](docs/images/nepal-data-pipeline-architecture.svg)*
+*Editable vector version: [`docs/images/nepal-data-pipeline-architecture.svg`](docs/images/nepal-data-pipeline-architecture1.svg)*
 
 ## Contents
 
