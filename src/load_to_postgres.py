@@ -25,9 +25,9 @@ def load_data():
         password = getpass.getpass("PostgreSQL password: ")
 
     host = os.getenv("DB_HOST", "localhost")
-    port = int(os.getenv("DB_PORT", "5432"))
+    port = int(os.getenv("DB_PORT", "5433"))
     dbname = os.getenv("DB_NAME", "nepal_data")
-    user = os.getenv("DB_USER", "postgres")
+    user = os.getenv("DB_USER", "pipeline_user")
 
     with psycopg.connect(
         host=host,
@@ -64,13 +64,16 @@ def load_data():
                 )
 
             columns = list(df.columns)
+
             insert_query = sql.SQL(
                 "INSERT INTO observations ({}) VALUES ({})"
             ).format(
                 sql.SQL(", ").join(
                     sql.Identifier(column) for column in columns
                 ),
-                sql.SQL(", ").join(sql.Placeholder() for _ in columns),
+                sql.SQL(", ").join(
+                    sql.Placeholder() for _ in columns
+                ),
             )
 
             rows = [
