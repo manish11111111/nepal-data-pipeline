@@ -1,5 +1,6 @@
 
 import getpass
+import os
 from pathlib import Path
 
 import pandas as pd
@@ -19,13 +20,20 @@ def load_data():
 
     df = pd.read_parquet(DATA_PATH)
 
-    password = getpass.getpass("PostgreSQL password for postgres: ")
+    password = os.getenv("DB_PASSWORD")
+    if not password:
+        password = getpass.getpass("PostgreSQL password: ")
+
+    host = os.getenv("DB_HOST", "localhost")
+    port = int(os.getenv("DB_PORT", "5432"))
+    dbname = os.getenv("DB_NAME", "nepal_data")
+    user = os.getenv("DB_USER", "postgres")
 
     with psycopg.connect(
-        host="localhost",
-        port=5432,
-        dbname="nepal_data",
-        user="postgres",
+        host=host,
+        port=port,
+        dbname=dbname,
+        user=user,
         password=password,
     ) as conn:
         with conn.cursor() as cur:

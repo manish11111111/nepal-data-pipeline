@@ -1,24 +1,24 @@
 
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-
-# Virtual environment
+# Python environments
 .venv/
 venv/
+__pycache__/
+*.py[cod]
 
-# Test and tooling cache
+# Test caches
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 
-# Environment variables and secrets
+# Secrets
 .env
 .env.*
 
 # Logs
-logs/*.log
+logs/
+
+# Data files: keep local, do not publish yet
+/data/
 
 # IDE and operating system
 .vscode/
