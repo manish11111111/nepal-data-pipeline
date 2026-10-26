@@ -1,23 +1,22 @@
-
 # Nepal Public Data Pipeline
 
 A reproducible data engineering project that validates, transforms, and stores public data about Nepal using Python, Parquet, and PostgreSQL. The project includes automated testing, data quality reporting, execution logging, Docker Compose, and continuous integration with GitHub Actions.
 
 ## Overview
 
-The pipeline processes a Parquet dataset containing public observations about Nepal. It validates data integrity, standardizes date fields, produces cleaned data, and supports loading the results into PostgreSQL for downstream analysis.
+The pipeline processes a Parquet dataset containing public observations about Nepal. It validates data integrity, standardizes date fields, generates cleaned data, and loads the results into PostgreSQL for downstream analysis.
 
-The project is designed to demonstrate core data engineering practices: reliable transformations, validation, duplicate protection, containerization, and automated testing.
+The project demonstrates core data engineering practices, including reliable transformations, data validation, duplicate protection, containerization, and automated testing.
 
 ## Features
 
-- Read and process Parquet data with pandas and PyArrow
+- Read and process Parquet data using pandas and PyArrow
 - Validate required columns and mandatory identifiers
 - Detect duplicate observation IDs and invalid data
 - Validate dates and observation periods
 - Generate cleaned Parquet output
-- Generate data quality reports and summary files
-- Record execution logs
+- Generate data quality reports and transformation summaries
+- Record pipeline execution logs
 - Load processed observations into PostgreSQL
 - Prevent accidental duplicate database loads
 - Run the pipeline and database using Docker Compose
@@ -34,7 +33,7 @@ The project is designed to demonstrate core data engineering practices: reliable
 | Duplicate observation IDs | 0 |
 | Duplicate rows | 0 |
 
-The dataset combines observations from multiple sources:
+### Dataset Distribution
 
 | Dataset ID | Observations |
 |---|---:|
@@ -49,23 +48,23 @@ These figures describe the dataset currently processed by the project. Refer to 
 ## Technology Stack
 
 - **Language:** Python
-- **Data processing:** pandas, PyArrow, Parquet
+- **Data Processing:** pandas, PyArrow, Parquet
 - **Database:** PostgreSQL
 - **Containerization:** Docker, Docker Compose
 - **Testing:** pytest
-- **CI:** GitHub Actions
-- **Version control:** Git and GitHub
+- **Continuous Integration:** GitHub Actions
+- **Version Control:** Git and GitHub
 
 ## Project Structure
 
 ```text
 nepal-data-pipeline/
 ├── .github/
-│   └── workflows/          
+│   └── workflows/
 ├── data/
-│   ├── raw/              
-│   └── processed/           
-├── logs/                    
+│   ├── raw/
+│   └── processed/
+├── logs/
 ├── src/
 │   ├── pipeline.py
 │   ├── transform_data.py
@@ -84,47 +83,40 @@ nepal-data-pipeline/
 ├── Dockerfile
 ├── compose.yaml
 ├── requirements.txt
-├── README.md
-└── .env                  
+└── README.md
 ```
 
 ## Prerequisites
 
-For local execution:
-
 - Python
 - Git
-- The source Parquet dataset
-
-For the containerized workflow:
-
 - Docker Desktop with Docker Compose
 - The source Parquet dataset
 
 ## Getting Started
 
-### 1. Clone the repository
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/manish11111111/nepal-data-pipeline.git
 cd nepal-data-pipeline
 ```
 
-### 2. Prepare the dataset
+### 2. Prepare the Dataset
 
-Place the original dataset at:
+Place the source dataset at:
 
 ```text
 data/raw/observations.parquet
 ```
 
-The raw dataset is not committed to the repository. Obtain it from the original data provider and ensure you have permission to use it.
+The raw dataset is excluded from version control. Obtain it from the original provider and ensure you have permission to use it.
 
-### 3. Install dependencies
+### 3. Install Dependencies
 
 Create and activate a virtual environment.
 
-Windows PowerShell:
+**Windows PowerShell**
 
 ```powershell
 python -m venv .venv
@@ -134,7 +126,7 @@ python -m pip install -r requirements.txt
 
 ## Run Locally
 
-Run the data validation and processing pipeline:
+Run the data processing pipeline:
 
 ```powershell
 python -m src.pipeline
@@ -146,19 +138,19 @@ Generate the data quality report:
 python -m src.data_quality_report
 ```
 
-Run the data transformation workflow:
+Run the transformation workflow:
 
 ```powershell
 python -m src.transform_data
 ```
 
-The transformation workflow expects its configured input data to be available. Check the script's configuration before running it independently.
+The transformation workflow requires its configured input data to be available.
 
 ## PostgreSQL Integration
 
 The project includes a loader that writes cleaned observations to PostgreSQL.
 
-Configure the database connection through environment variables when needed:
+Configure the connection using these environment variables when required:
 
 - `DB_HOST`
 - `DB_PORT`
@@ -166,27 +158,27 @@ Configure the database connection through environment variables when needed:
 - `DB_USER`
 - `DB_PASSWORD`
 
-Without these variables, the loader uses its local connection defaults and prompts for the password if one is not supplied.
+Without these variables, the loader uses its local connection defaults and prompts for a password if one is not supplied.
 
-Run the loader after the cleaned Parquet file has been generated:
+Run the loader after generating the cleaned Parquet file:
 
 ```powershell
 python -m src.load_to_postgres
 ```
 
-The loader creates the `observations` table if necessary and stops when the table already contains records, preventing accidental duplicate loads.
+The loader creates the `observations` table if necessary and stops when the table already contains records to prevent accidental duplicate loading.
 
 ## Run with Docker Compose
 
-### 1. Configure the database password
+### 1. Configure the Database Password
 
-Create a local `.env` file in the project root:
+Create a `.env` file in the project root:
 
 ```dotenv
 POSTGRES_PASSWORD=replace_with_your_own_strong_password
 ```
 
-Replace the placeholder with a strong password. Do not commit this file or share its contents.
+Replace the placeholder with a strong password. Do not commit or share this file.
 
 ### 2. Start PostgreSQL
 
@@ -194,15 +186,15 @@ Replace the placeholder with a strong password. Do not commit this file or share
 docker compose up -d db
 ```
 
-The PostgreSQL container exposes port `5433` on the host and uses port `5432` internally.
+PostgreSQL is available on host port `5433` and container port `5432`.
 
-### 3. Run the pipeline
+### 3. Run the Pipeline
 
 ```powershell
 docker compose run --rm pipeline
 ```
 
-### 4. Load the processed data
+### 4. Load Data into PostgreSQL
 
 ```powershell
 docker compose run --rm --no-deps --entrypoint python pipeline src/load_to_postgres.py
@@ -210,7 +202,7 @@ docker compose run --rm --no-deps --entrypoint python pipeline src/load_to_postg
 
 Run the initial load only once for a fresh database. The loader intentionally stops if records already exist.
 
-### 5. Verify the database
+### 5. Verify the Database
 
 Check the total number of observations:
 
@@ -218,19 +210,19 @@ Check the total number of observations:
 docker compose exec db psql -U pipeline_user -d nepal_data -c "SELECT COUNT(*) AS total_rows FROM observations;"
 ```
 
-Inspect counts by dataset:
+Inspect observations by dataset:
 
 ```powershell
 docker compose exec db psql -U pipeline_user -d nepal_data -c "SELECT dataset_id, COUNT(*) AS row_count FROM observations GROUP BY dataset_id ORDER BY row_count DESC;"
 ```
 
-To stop the running services:
+Stop the containers:
 
 ```powershell
 docker compose down
 ```
 
-This stops and removes the containers but preserves the named database volume. Do not use `docker compose down -v` unless you intentionally want to delete the persisted Docker database.
+This stops and removes the containers while preserving the named database volume. Avoid `docker compose down -v` unless you intentionally want to delete the persisted Docker database.
 
 ## Testing
 
@@ -240,9 +232,9 @@ Run the automated test suite:
 python -m pytest -v
 ```
 
-The current test suite contains **15 tests** covering pipeline validation, data transformations, missing files, database loading behavior, duplicate-load protection, and row-count checks.
+The test suite contains 15 tests covering pipeline validation, data transformations, missing files, database loading behavior, duplicate-load protection, and row-count checks.
 
-Latest verified local test result: **15 passed**.
+**Latest verified local result:** 15 tests passed.
 
 ## Outputs
 
@@ -250,14 +242,14 @@ Depending on the workflow executed, generated artifacts include:
 
 - `data/processed/observations_clean.parquet`
 - `data/processed/data_quality_report.json`
-- Additional transformation summary files under `data/processed/`
+- Transformation summary files under `data/processed/`
 - `logs/pipeline.log`
 
-Generated data and logs are kept outside version control.
+Generated data and logs are excluded from version control.
 
 ## Continuous Integration
 
-GitHub Actions runs automated checks on repository changes. This helps detect regressions without requiring every test to be run manually.
+GitHub Actions runs automated checks on repository changes to help detect regressions and maintain code reliability.
 
 ## Future Improvements
 
@@ -270,6 +262,6 @@ GitHub Actions runs automated checks on repository changes. This helps detect re
 
 ## Data and Licensing
 
-The dataset contains observations from multiple providers. Review the original providers' terms, attribution requirements, and licensing conditions before redistributing source data.
+The dataset contains observations from multiple providers. Review the original providers' licensing conditions and attribution requirements before redistributing source data.
 
 Validation checks establish whether data meets defined technical rules; they do not independently establish the accuracy or meaning of every observation.
