@@ -52,12 +52,52 @@ def test_missing_required_value_fails(valid_data):
 def test_invalid_date_fails(valid_data):
     valid_data.loc[0, "period_start"] = "not-a-date"
 
-    with pytest.raises(ValueError, match="invalid dates"):
+    with pytest.raises(ValueError, match="period_start contains 1 invalid dates"):
         validate_data(valid_data)
 
 
 def test_negative_inflation_is_allowed(valid_data):
     valid_data.loc[0, "value_numeric"] = -2.5
+
+    validate_data(valid_data)
+
+
+def test_missing_required_column_fails(valid_data):
+    valid_data = valid_data.drop(columns=["place_id"])
+
+    with pytest.raises(ValueError, match="Missing required columns: place_id"):
+        validate_data(valid_data)
+
+
+def test_period_end_before_period_start_fails(valid_data):
+    valid_data.loc[0, "period_start"] = "2025-12-31"
+    valid_data.loc[0, "period_end"] = "2025-01-01"
+
+    with pytest.raises(
+        ValueError,
+        match="period_end dates are before period_start",
+    ):
+        validate_data(valid_data)
+
+
+def test_missing_status_fails(valid_data):
+    valid_data.loc[0, "status"] = None
+
+    with pytest.raises(ValueError, match="status contains missing values"):
+        validate_data(valid_data)
+
+
+def test_missing_both_numeric_and_text_values_fails(valid_data):
+    valid_data.loc[0, "value_numeric"] = float("nan")
+    valid_data.loc[0, "value_text"] = None
+
+    with pytest.raises(ValueError, match="neither numeric nor text values"):
+        validate_data(valid_data)
+
+
+def test_text_value_is_accepted_when_numeric_value_is_missing(valid_data):
+    valid_data.loc[0, "value_numeric"] = float("nan")
+    valid_data.loc[0, "value_text"] = "Not available"
 
     validate_data(valid_data)
 
