@@ -1,4 +1,3 @@
-
 from pathlib import Path
 
 import pandas as pd
@@ -23,10 +22,6 @@ def valid_data():
             "value_text": [None, None],
             "unit_id": ["count", "count"],
             "status": ["active", "active"],
-            "source_url": [
-                "https://example.com/data1",
-                "https://example.com/data2",
-            ],
         }
     )
 

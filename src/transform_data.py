@@ -1,4 +1,3 @@
-
 from pathlib import Path
 
 import pandas as pd
@@ -21,9 +20,13 @@ def transform_data(input_path=INPUT_PATH, output_dir=OUTPUT_DIR):
 
     df = pd.read_parquet(input_path)
 
-    df["value_numeric"] = pd.to_numeric(
-        df["value_numeric"], errors="raise"
-    )
+    # value_numeric should already be numeric after pipeline validation.
+    # Only coerce when the dtype is not numeric, to avoid redundant work
+    # and a second hard failure on already-validated data.
+    if not pd.api.types.is_numeric_dtype(df["value_numeric"]):
+        df["value_numeric"] = pd.to_numeric(
+            df["value_numeric"], errors="raise"
+        )
 
     indicator_summary = (
         df.groupby(

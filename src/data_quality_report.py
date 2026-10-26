@@ -1,8 +1,12 @@
-
 import json
 from pathlib import Path
 
 import pandas as pd
+
+try:
+    from .utils import parse_date_columns
+except ImportError:
+    from utils import parse_date_columns
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -16,12 +20,9 @@ def generate_report():
 
     df = pd.read_parquet(RAW_PATH)
 
-    date_start = pd.to_datetime(
-        df["period_start"], errors="coerce", format="mixed"
-    )
-    date_end = pd.to_datetime(
-        df["period_end"], errors="coerce", format="mixed"
-    )
+    parsed = parse_date_columns(df, errors="coerce")
+    date_start = parsed["period_start"]
+    date_end = parsed["period_end"]
 
     report = {
         "project": "Nepal Public Data Pipeline",

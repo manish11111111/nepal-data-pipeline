@@ -5,6 +5,11 @@ from pathlib import Path
 
 import pandas as pd
 
+try:
+    from .utils import parse_date_columns, DATE_COLUMNS
+except ImportError:
+    from utils import parse_date_columns, DATE_COLUMNS
+
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -86,19 +91,10 @@ def validate_data(df: pd.DataFrame) -> None:
             "numeric nor text values"
         )
 
-    parsed_dates = {}
+    parsed_dates = parse_date_columns(df, errors="coerce")
 
-    for column in ("period_start", "period_end"):
-        parsed = pd.to_datetime(
-            df[column],
-            errors="coerce",
-            format="mixed",
-        )
-
-        parsed_dates[column] = parsed
-
-        invalid_count = int(parsed.isna().sum())
-
+    for column in DATE_COLUMNS:
+        invalid_count = int(parsed_dates[column].isna().sum())
         if invalid_count:
             errors.append(
                 f"{column} contains {invalid_count} invalid dates"
@@ -160,16 +156,10 @@ def run_pipeline(
         validate_data(df)
         logger.info("Data validation passed")
 
-        df["period_start"] = pd.to_datetime(
-            df["period_start"],
-            errors="raise",
-            format="mixed",
-        )
-        df["period_end"] = pd.to_datetime(
-            df["period_end"],
-            errors="raise",
-            format="mixed",
-        )
+        # Parse dates using the shared helper (errors='raise' after validation).
+        parsed = parse_date_columns(df, errors="raise")
+        for column in DATE_COLUMNS:
+            df[column] = parsed[column]
 
         cleaned_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_parquet(cleaned_path, index=False)

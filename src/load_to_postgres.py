@@ -1,4 +1,3 @@
-
 import getpass
 import os
 from pathlib import Path
@@ -10,6 +9,22 @@ from psycopg import sql
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_PATH = PROJECT_ROOT / "data" / "processed" / "observations_clean.parquet"
 
+# Explicit column contract — must match the DB table schema exactly.
+INSERT_COLUMNS = [
+    "observation_id",
+    "dataset_id",
+    "indicator_id",
+    "place_id",
+    "period_start",
+    "period_end",
+    "period_type",
+    "value_numeric",
+    "value_text",
+    "unit_id",
+    "status",
+    "dimension_key",
+]
+
 
 def load_data():
     if not DATA_PATH.exists():
@@ -19,6 +34,17 @@ def load_data():
         )
 
     df = pd.read_parquet(DATA_PATH)
+
+    # Validate column contract BEFORE touching the database.
+    missing = set(INSERT_COLUMNS) - set(df.columns)
+    if missing:
+        raise ValueError(
+            f"Cleaned dataset is missing columns required by the loader: "
+            f"{sorted(missing)}"
+        )
+
+    # Keep only the columns we will insert, in the correct order.
+    df = df[INSERT_COLUMNS]
 
     password = os.getenv("DB_PASSWORD")
     if not password:
@@ -63,16 +89,14 @@ def load_data():
                     "Stopping to avoid accidental duplicate loading."
                 )
 
-            columns = list(df.columns)
-
             insert_query = sql.SQL(
                 "INSERT INTO observations ({}) VALUES ({})"
             ).format(
                 sql.SQL(", ").join(
-                    sql.Identifier(column) for column in columns
+                    sql.Identifier(column) for column in INSERT_COLUMNS
                 ),
                 sql.SQL(", ").join(
-                    sql.Placeholder() for _ in columns
+                    sql.Placeholder() for _ in INSERT_COLUMNS
                 ),
             )
 

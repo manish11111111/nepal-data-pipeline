@@ -1,7 +1,6 @@
-
 services:
   db:
-    image: postgres:18
+    image: postgres:18.0
     environment:
       POSTGRES_DB: nepal_data
       POSTGRES_USER: pipeline_user
