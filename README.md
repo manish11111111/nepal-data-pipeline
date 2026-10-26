@@ -1,4 +1,4 @@
-# Nepal Public Data Pipeline
+﻿# Nepal Public Data Pipeline
 
 A reproducible data engineering project that validates, transforms, and stores public data about Nepal using Python, Parquet, and PostgreSQL. The project includes automated testing, data quality reporting, execution logging, Docker Compose, and continuous integration with GitHub Actions.
 
@@ -59,31 +59,31 @@ These figures describe the dataset currently processed by the project. Refer to 
 
 ```text
 nepal-data-pipeline/
-├── .github/
-│   └── workflows/
-├── data/
-│   ├── raw/
-│   └── processed/
-├── logs/
-├── src/
-│   ├── pipeline.py
-│   ├── transform_data.py
-│   ├── validate_data.py
-│   ├── inspect_data.py
-│   ├── profile_data.py
-│   ├── data_quality_report.py
-│   ├── load_to_postgres.py
-│   └── check_postgres_connection.py
-├── tests/
-│   ├── test_pipeline.py
-│   ├── test_transform_data.py
-│   └── test_load_to_postgres.py
-├── .dockerignore
-├── .gitignore
-├── Dockerfile
-├── compose.yaml
-├── requirements.txt
-└── README.md
+â”œâ”€â”€ .github/
+â”‚   â””â”€â”€ workflows/
+â”œâ”€â”€ data/
+â”‚   â”œâ”€â”€ raw/
+â”‚   â””â”€â”€ processed/
+â”œâ”€â”€ logs/
+â”œâ”€â”€ src/
+â”‚   â”œâ”€â”€ pipeline.py
+â”‚   â”œâ”€â”€ transform_data.py
+â”‚   â”œâ”€â”€ validate_data.py
+â”‚   â”œâ”€â”€ inspect_data.py
+â”‚   â”œâ”€â”€ profile_data.py
+â”‚   â”œâ”€â”€ data_quality_report.py
+â”‚   â”œâ”€â”€ load_to_postgres.py
+â”‚   â””â”€â”€ check_postgres_connection.py
+â”œâ”€â”€ tests/
+â”‚   â”œâ”€â”€ test_pipeline.py
+â”‚   â”œâ”€â”€ test_transform_data.py
+â”‚   â””â”€â”€ test_load_to_postgres.py
+â”œâ”€â”€ .dockerignore
+â”œâ”€â”€ .gitignore
+â”œâ”€â”€ Dockerfile
+â”œâ”€â”€ compose.yaml
+â”œâ”€â”€ requirements.txt
+â””â”€â”€ README.md
 ```
 
 ## Prerequisites
@@ -104,13 +104,17 @@ cd nepal-data-pipeline
 
 ### 2. Prepare the Dataset
 
-Place the source dataset at:
+Download the observations dataset from [DataNepal's dataset catalogue](https://www.datanepal.org/datasets/).
 
-```text
-data/raw/observations.parquet
-```
+Place the downloaded Parquet file at:
 
-The raw dataset is excluded from version control. Obtain it from the original provider and ensure you have permission to use it.
+`data/raw/observations.parquet`
+
+The project expects this file as its raw input. Raw and processed data files are excluded from version control, so each user must obtain the dataset separately.
+
+The dataset currently used for development contains 27,182 observations across 12 columns and four dataset IDs. These counts describe the downloaded snapshot and may change when the upstream dataset is updated.
+
+**Data attribution and licensing:** DataNepal aggregates information from multiple providers. Refer to the dataset catalogue for the original publishers, source-specific licences, attribution requirements, retrieval dates, and methodological caveats. Do not assume that every source uses the same licence.
 
 ### 3. Install Dependencies
 
@@ -265,3 +269,4 @@ GitHub Actions runs automated checks on repository changes to help detect regres
 The dataset contains observations from multiple providers. Review the original providers' licensing conditions and attribution requirements before redistributing source data.
 
 Validation checks establish whether data meets defined technical rules; they do not independently establish the accuracy or meaning of every observation.
+
