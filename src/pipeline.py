@@ -1,5 +1,7 @@
 
+import argparse
 import logging
+import sys
 from pathlib import Path
 
 import pandas as pd
@@ -46,7 +48,8 @@ def validate_data(df: pd.DataFrame) -> None:
     errors = []
 
     missing_columns = [
-        column for column in REQUIRED_COLUMNS
+        column
+        for column in REQUIRED_COLUMNS
         if column not in df.columns
     ]
 
@@ -86,15 +89,17 @@ def validate_data(df: pd.DataFrame) -> None:
 
     parsed_dates = {}
 
-    for column in ["period_start", "period_end"]:
+    for column in ("period_start", "period_end"):
         parsed = pd.to_datetime(
             df[column],
             errors="coerce",
             format="mixed",
         )
+
         parsed_dates[column] = parsed
 
         invalid_count = int(parsed.isna().sum())
+
         if invalid_count:
             errors.append(
                 f"{column} contains {invalid_count} invalid dates"
@@ -102,6 +107,7 @@ def validate_data(df: pd.DataFrame) -> None:
 
     start = parsed_dates["period_start"]
     end = parsed_dates["period_end"]
+
     valid_dates = start.notna() & end.notna()
 
     if (end[valid_dates] < start[valid_dates]).any():
@@ -113,20 +119,45 @@ def validate_data(df: pd.DataFrame) -> None:
         )
 
 
-def run_pipeline():
+def run_pipeline(
+    download_if_missing=False,
+    build_summaries=True,
+):
     logger = configure_logging()
+
     logger.info("Starting Nepal public data pipeline")
 
     try:
         if not RAW_PATH.exists():
-            raise FileNotFoundError(
-                f"Raw dataset not found: {RAW_PATH}"
-            )
+            if not download_if_missing:
+                raise FileNotFoundError(
+                    f"Raw dataset not found: {RAW_PATH}. "
+                    "Run with --ingest to download it."
+                )
+
+            logger.info("Raw dataset missing; starting ingestion")
+
+            try:
+                from .ingest_data import download_dataset
+            except ImportError:
+                from ingest_data import download_dataset
+
+            download_dataset(RAW_PATH)
+
+            if not RAW_PATH.exists():
+                raise FileNotFoundError(
+                    "Ingestion completed without creating the raw dataset: "
+                    f"{RAW_PATH}"
+                )
+
+        logger.info("Reading raw dataset")
 
         df = pd.read_parquet(RAW_PATH)
+
         logger.info("Loaded %s rows", f"{len(df):,}")
 
         validate_data(df)
+
         logger.info("Data validation passed")
 
         df["period_start"] = pd.to_datetime(
@@ -134,6 +165,7 @@ def run_pipeline():
             errors="raise",
             format="mixed",
         )
+
         df["period_end"] = pd.to_datetime(
             df["period_end"],
             errors="raise",
@@ -141,11 +173,30 @@ def run_pipeline():
         )
 
         OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+
         df.to_parquet(OUTPUT_PATH, index=False)
 
-        logger.info("Output saved to %s", OUTPUT_PATH.relative_to(PROJECT_ROOT))
+        try:
+            display_path = OUTPUT_PATH.relative_to(PROJECT_ROOT)
+        except ValueError:
+            display_path = OUTPUT_PATH
+
+        logger.info("Output saved to %s", display_path)
         logger.info("Rows written: %s", f"{len(df):,}")
         logger.info("Columns written: %s", len(df.columns))
+
+        if build_summaries:
+            logger.info("Generating summary reports")
+
+            try:
+                from .transform_data import transform_data
+            except ImportError:
+                from transform_data import transform_data
+
+            transform_data(OUTPUT_PATH, OUTPUT_PATH.parent)
+
+            logger.info("Summary reports generated")
+
         logger.info("Pipeline completed successfully")
 
     except Exception:
@@ -153,5 +204,32 @@ def run_pipeline():
         raise
 
 
+def main():
+    parser = argparse.ArgumentParser(
+        description="Run the Nepal public data pipeline."
+    )
+
+    parser.add_argument(
+        "--ingest",
+        action="store_true",
+        help="Download the raw dataset only if it is missing.",
+    )
+
+    parser.add_argument(
+        "--no-summaries",
+        action="store_true",
+        help="Skip summary CSV generation.",
+    )
+
+    args = parser.parse_args()
+
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+    run_pipeline(
+        download_if_missing=args.ingest,
+        build_summaries=not args.no_summaries,
+    )
+
+
 if __name__ == "__main__":
-    run_pipeline()
+    main()
