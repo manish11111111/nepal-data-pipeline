@@ -83,7 +83,10 @@ st.markdown("<div style='height:0.6rem'></div>", unsafe_allow_html=True)
 c5, c6, c7, c8 = st.columns(4)
 c5.metric("Datasets", f"{df['dataset_id'].nunique()}")
 c6.metric("Duplicate IDs", f"{df['observation_id'].duplicated().sum()}")
-c7.metric("Missing values", f"{int(df.isna().sum().sum()):,}")
+c7.metric(
+    "Rows missing both values",
+    f"{int((df['value_numeric'].isna() & df['value_text'].isna()).sum()):,}",
+)
 c8.metric(
     "Date range",
     f"{df['period_start'].min().year}–{df['period_end'].max().year}",
