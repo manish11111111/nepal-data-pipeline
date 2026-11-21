@@ -32,5 +32,15 @@ services:
     profiles:
       - pipeline
 
+  app:
+    build: .
+    command: streamlit run app.py --server.address=0.0.0.0 --server.port=8501
+    ports:
+      - "8501:8501"
+    volumes:
+      - .:/app
+    profiles:
+      - app
+
 volumes:
   postgres_data:

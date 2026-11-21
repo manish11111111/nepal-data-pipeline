@@ -18,10 +18,12 @@ GLOBAL_CSS = """
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
     html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-/* Hide the green success checkmark in the page header */
-[data-testid="stStatusWidget"] {
-    display: none !important;
-}
+
+    /* Hide the status widget (running / checkmark) in the header */
+    [data-testid="stStatusWidget"] {
+        display: none !important;
+    }
+
     .stApp {
         background:
             radial-gradient(circle at 15% 0%, rgba(99,102,241,0.10), transparent 45%),
@@ -29,7 +31,48 @@ GLOBAL_CSS = """
             #0a0a0f;
         color: #e5e7eb;
     }
-    #MainMenu, footer, header { visibility: hidden; }
+
+    /* ---------- Header / sidebar toggle fix ----------
+       Do NOT hide <header>: the button that re-opens the sidebar lives in it.
+       Hide only the menu, deploy button and Streamlit footer. */
+    #MainMenu,
+    footer,
+    [data-testid="stMainMenu"],
+    [data-testid="stDeployButton"],
+    [data-testid="stAppDeployButton"] {
+        visibility: hidden !important;
+        display: none !important;
+    }
+
+    header[data-testid="stHeader"] {
+        background: transparent !important;
+        visibility: visible !important;
+        display: block !important;
+    }
+
+    /* Button that re-opens the sidebar (name differs by Streamlit version) */
+    [data-testid="stSidebarCollapsedControl"],
+    [data-testid="stExpandSidebarButton"],
+    [data-testid="collapsedControl"] {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        z-index: 999999 !important;
+    }
+    [data-testid="stSidebarCollapsedControl"] button,
+    [data-testid="stExpandSidebarButton"],
+    [data-testid="collapsedControl"] button {
+        color: #a5b4fc !important;
+    }
+
+    /* Button that closes the sidebar */
+    [data-testid="stSidebarCollapseButton"],
+    [data-testid="stSidebarCollapseButton"] button {
+        visibility: visible !important;
+        opacity: 1 !important;
+        color: #a5b4fc !important;
+    }
+
     .block-container { padding-top: 2rem; padding-bottom: 3rem; max-width: 1400px; }
 
     h1, h2, h3 { font-family: 'Inter', sans-serif; letter-spacing: -0.02em; color: #f9fafb; }
