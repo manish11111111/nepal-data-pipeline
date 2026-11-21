@@ -76,7 +76,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.dataframe(filtered.head(500), use_container_width=True, hide_index=True)
+st.dataframe(filtered.head(500), width="stretch", hide_index=True)
 
 if not filtered.empty:
     numeric = filtered["value_numeric"].dropna()
@@ -87,7 +87,7 @@ if not filtered.empty:
             numeric, nbins=30, template="plotly_dark",
             color_discrete_sequence=["#6366f1"],
         )
-        st.plotly_chart(chart_layout(fig), use_container_width=True)
+        st.plotly_chart(chart_layout(fig), width="stretch")
 
 st.download_button(
     "Download filtered data as CSV",

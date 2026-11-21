@@ -57,7 +57,7 @@ if not CLEAN_PATH.exists():
 df = load_clean()
 
 if DATASET_SUMMARY_PATH.exists():
-    st.dataframe(load_summary(), use_container_width=True, hide_index=True)
+    st.dataframe(load_summary(), width="stretch", hide_index=True)
 else:
     st.warning("dataset_summary.csv not found.")
 
@@ -74,7 +74,7 @@ with col1:
         template="plotly_dark",
         color_discrete_sequence=["#6366f1"],
     )
-    st.plotly_chart(chart_layout(fig), use_container_width=True)
+    st.plotly_chart(chart_layout(fig), width="stretch")
 
 with col2:
     st.subheader("Observations by status")
@@ -85,7 +85,7 @@ with col2:
         template="plotly_dark",
         color_discrete_sequence=["#6366f1", "#ec4899", "#22d3ee", "#f59e0b"],
     )
-    st.plotly_chart(chart_layout(fig), use_container_width=True)
+    st.plotly_chart(chart_layout(fig), width="stretch")
 
 st.subheader("Observations by period type")
 period = df["period_type"].value_counts().reset_index()
@@ -94,6 +94,6 @@ fig = px.bar(
     period, x="period_type", y="count",
     template="plotly_dark", color_discrete_sequence=["#22d3ee"],
 )
-st.plotly_chart(chart_layout(fig), use_container_width=True)
+st.plotly_chart(chart_layout(fig), width="stretch")
 
 footer()

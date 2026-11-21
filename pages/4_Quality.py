@@ -90,10 +90,10 @@ st.markdown('<div class="section-rule"></div>', unsafe_allow_html=True)
 
 st.subheader("Missing values by column")
 missing = df.isna().sum().sort_values(ascending=False)
-st.dataframe(missing.to_frame("missing_count"), use_container_width=True)
+st.dataframe(missing.to_frame("missing_count"), width="stretch")
 
 st.subheader("Column data types")
-st.dataframe(df.dtypes.astype(str).to_frame("dtype"), use_container_width=True)
+st.dataframe(df.dtypes.astype(str).to_frame("dtype"), width="stretch")
 
 st.markdown('<div class="section-rule"></div>', unsafe_allow_html=True)
 st.subheader("Anomaly detection (Isolation Forest)")
@@ -114,14 +114,14 @@ else:
             template="plotly_dark", color_discrete_sequence=["#f59e0b"],
         )
         fig.update_layout(yaxis=dict(autorange="reversed"))
-        st.plotly_chart(chart_layout(fig), use_container_width=True)
+        st.plotly_chart(chart_layout(fig), width="stretch")
 
         st.dataframe(
             flagged[
                 ["observation_id", "dataset_id", "indicator_id",
                  "value_numeric", "period_start"]
             ].head(200),
-            use_container_width=True,
+            width="stretch",
             hide_index=True,
         )
 

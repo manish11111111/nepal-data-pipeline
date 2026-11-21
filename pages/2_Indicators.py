@@ -49,7 +49,7 @@ datasets = ["All datasets"] + sorted(ind["dataset_id"].dropna().unique().tolist(
 selected = st.selectbox("Filter by dataset", datasets)
 view = ind if selected == "All datasets" else ind[ind["dataset_id"] == selected]
 
-st.dataframe(view, use_container_width=True, hide_index=True)
+st.dataframe(view, width="stretch", hide_index=True)
 
 st.markdown('<div class="section-rule"></div>', unsafe_allow_html=True)
 
@@ -63,7 +63,7 @@ with col1:
         template="plotly_dark", color_discrete_sequence=["#6366f1"],
     )
     fig.update_layout(yaxis=dict(autorange="reversed"))
-    st.plotly_chart(chart_layout(fig), use_container_width=True)
+    st.plotly_chart(chart_layout(fig), width="stretch")
 
 with col2:
     st.subheader("Top 15 indicators by mean value")
@@ -77,6 +77,6 @@ with col2:
         template="plotly_dark", color_discrete_sequence=["#ec4899"],
     )
     fig.update_layout(yaxis=dict(autorange="reversed"))
-    st.plotly_chart(chart_layout(fig), use_container_width=True)
+    st.plotly_chart(chart_layout(fig), width="stretch")
 
 footer()
